@@ -1,3 +1,14 @@
+## Задание для стажировки - Моделирование базы данных:
+Представьте, что вы участвуете в разработке бэкенда данного сервиса.
+Ваша задача - спроектировать структуру базы данных для хранения информации о меню - разделах меню и 
+блюдах в этих разделах - и заказах блюд.
+1. Пришлите описание используемых таблиц, включая информацию о названиях и формате полей.
+2. Предложите индексы для каждой из таблиц, которые помогут быстрее выдавать информацию по идентификатору ресторана.
+3. Напишите SQL-запрос, который выведет все блюда, для которых не было ни одного заказа за текущий месяц.
+
+Основной текст ответа размещенн в файле answer_test.md 
+Ниже приведены инструкции для разворачивания стенда.
+
 ## PostgreSQL and pgAdmin
 This example provides a base setup for using [PostgreSQL](https://www.postgresql.org/) and [pgAdmin](https://www.pgadmin.org/).
 More details on how to customize the installation and the compose file can be found [here (PostgreSQL)](https://hub.docker.com/_/postgres) and [here (pgAdmin)](https://www.pgadmin.org/docs/pgadmin4/latest/container_deployment.html).

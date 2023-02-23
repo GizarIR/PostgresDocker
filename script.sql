@@ -115,7 +115,7 @@ INSERT INTO orders VALUES
 
 
 CREATE TABLE order_dish (
-	order_id integer REFERENCES menu ON DELETE CASCADE,
+	order_id integer REFERENCES order ON DELETE CASCADE,
 	dish_id integer REFERENCES dishes ON DELETE RESTRICT,
 	quantity integer,
     PRIMARY KEY (order_id, dish_id)
@@ -149,6 +149,8 @@ INSERT INTO order_dish VALUES
 -- 					WHERE od.order_id=o.id AND od.dish_id=d.id AND NOT (o.time_create > '2023-02-01 00:00:00' AND o.time_create < '2023-02-28 00:00:00')
 -- 			);
 
+SELECT version(); -- версия PostsreSQL 14.5
+
 SELECT id, name FROM dishes
 	EXCEPT 
 		SELECT d.id, d.name 
@@ -156,3 +158,14 @@ SELECT id, name FROM dishes
 				WHERE od.order_id=o.id 
 						AND od.dish_id=d.id 
 						AND (o.time_create > '2023-02-01 00:00:00' AND o.time_create < '2023-02-28 00:00:00');
+
+
+-- Результат выборки:
+-- 2	"Fish and Chips"
+-- 1	"Kvas"
+-- 4	"Airan"
+
+SELECT o.id, d.name FROM orders as o, dishes as d, order_dish as od
+	WHERE od.order_id=o.id AND od.dish_id=d.id AND o.id = 3
+
+-- Проверка: Заказ номер 3 содержал Pancake и был сделан в феврале 2023
