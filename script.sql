@@ -15,10 +15,13 @@ DROP TABLE IF EXISTS order_dish CASCADE;
 CREATE TABLE restaurants (
 	id integer PRIMARY KEY,
 	name varchar(64) NOT NULL,
-	city varchar(128),
+	city varchar(128) NOT NULL,
 	email varchar(128) NOT NULL
 );
 
+CREATE INDEX resaurants_name_index ON restaurants (name);
+CREATE INDEX resaurants_city_index ON restaurants (city);
+CREATE UNIQUE INDEX resaurants_email_index ON restaurants (email);
 
 INSERT INTO restaurants VALUES
 	(1, 'Mexico Rest', 'Mexico', 'admin@mixico.com'),
@@ -26,13 +29,18 @@ INSERT INTO restaurants VALUES
 	(3, 'Monaco Rest', 'Monaco', 'admin@monaco.com'),
 	(4, 'Pafos Rest', 'Pafos', 'admin@pafos.com');
 
+
 CREATE TABLE menu (
 	id integer PRIMARY KEY,
 	name varchar (64) NOT NULL,
-	time_create timestamptz,
-	time_close timestamptz,
+	time_create timestamptz NOT NULL,
+	time_close timestamptz DEFAULT NULL,
 	restaurant_id integer REFERENCES restaurants (id) ON DELETE RESTRICT
 );
+
+CREATE INDEX menu_n_idx ON menu (name);
+CREATE INDEX menu_tc_idx ON menu (time_create);
+CREATE INDEX menu_r_idx ON menu (restaurant_id);
 
 INSERT INTO menu VALUES
 	(1, 'Summer Menu', '2022-06-01 10:23:54', NULL, 1),
@@ -41,8 +49,10 @@ INSERT INTO menu VALUES
 
 CREATE TABLE chapters (
 	id integer PRIMARY KEY,
-	name varchar (64) NOT NULL
+	name varchar (64) 
 );
+
+CREATE UNIQUE INDEX chapters_name_index ON chapters (name);
 
 INSERT INTO chapters VALUES
 	(1, 'Drinks'),
@@ -53,16 +63,20 @@ INSERT INTO chapters VALUES
 CREATE TABLE dishes (
 	id integer PRIMARY KEY,
 	name varchar (64) NOT NULL,
+	description text,
 	price money DEFAULT 0,
 	chapters_id integer REFERENCES chapters (id) ON DELETE RESTRICT 
 );
 
+CREATE INDEX dishes_name_idx ON dishes (name);
+CREATE INDEX dishes_description_idx ON dishes USING GIN (to_tsvector('english', description));
+CREATE INDEX dishes_c_idx ON dishes (chapters_id);
 
 INSERT INTO dishes VALUES
-	(1, 'Kvas', 20, 1),
-	(2, 'Fish and Chips', 30, 1 ),
-	(3, 'Pancake', 12, 3),
-	(4, 'Airan', 100, 1);
+	(1, 'Kvas', 'Water and Sugar', 20, 1),
+	(2, 'Fish and Chips', 'Fish and potatos', 30, 1 ),
+	(3, 'Pancake', 'Milk and egg', 12, 3),
+	(4, 'Airan', 'Water and milk', 100, 1);
 
 
 CREATE TABLE menu_dish (
@@ -70,6 +84,8 @@ CREATE TABLE menu_dish (
     dish_id integer REFERENCES dishes ON DELETE RESTRICT,
     PRIMARY KEY (menu_id, dish_id)
 );
+
+-- индексы не нужны поскольку таблица содержит составной Primary Key
 
 INSERT INTO menu_dish VALUES
 	(1, 1),
@@ -87,6 +103,10 @@ CREATE TABLE orders (
 	waiter varchar (64)
 );
 
+CREATE INDEX orders_tc_idx ON orders (time_create);
+CREATE INDEX orders_so_idx ON orders (status_order);
+CREATE INDEX orders_c_idx ON orders (customer);
+
 
 INSERT INTO orders VALUES
 	(1, '2023-01-01 10:23:54', 'Ivan', 1, 'ready', 'Kolya'),
@@ -101,6 +121,7 @@ CREATE TABLE order_dish (
     PRIMARY KEY (order_id, dish_id)
 );
 
+-- индексы не нужны поскольку таблица содержит составной Primary Key
 
 INSERT INTO order_dish VALUES
 	(1, 1, 1),
@@ -128,7 +149,7 @@ INSERT INTO order_dish VALUES
 -- 					WHERE od.order_id=o.id AND od.dish_id=d.id AND NOT (o.time_create > '2023-02-01 00:00:00' AND o.time_create < '2023-02-28 00:00:00')
 -- 			);
 
-SELECT id, name FROM dishes 
+SELECT id, name FROM dishes
 	EXCEPT 
 		SELECT d.id, d.name 
 			FROM order_dish as od, orders as o, dishes as d
